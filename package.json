@@ -1,0 +1,14 @@
+{
+  "name": "p2pwebrtc_backend",
+  "version": "1.0.0",
+  "description": "webrtc signaling server",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ali ghahremani",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.6.0"
+  }
+}
