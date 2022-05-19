@@ -1,3 +1,5 @@
+const WebSocket = require('ws');
+const error = require('../common/error');
 
 class RoomManager{
 
@@ -9,6 +11,7 @@ class RoomManager{
             .
             .
         */
+
         this.rooms = {}; // use hashmap for o(1) search
         /**
             socket: [roomId,roomId,...],
@@ -20,19 +23,23 @@ class RoomManager{
         this.sockets = {} // use hashmap for o(1) search
     }
 
+    /**
+     * @param {WebSocket} socket 
+     * @param {string} roomId 
+     */
     _joinRoom(socket, roomId) {
         let room = this.rooms[roomId];
         if (room === undefined) {
             // create
-            room = [socket];
+            this.rooms[roomId] = [socket];
 
         } else if (room.length === 0) {
             // first user join
-            room[0] = socket;
+            room.append(socket);
 
         } else if (room.length === 1) {
             // second user join
-            room[1] = socket;
+            room.append(socket);
 
             var response = JSON.stringify({
                 action: "online_status",
@@ -43,49 +50,69 @@ class RoomManager{
             room[1].send(response);
 
         } else {
-            socket.send({ action: error, message: "room is full" })
+            error(socket,"room is full");
         }
-        this.sockets[socket].append(roomId);
+
     }
 
-    _left(socket, roomsId) {
-        var room = this.rooms[roomsId];
-        var response = JSON.stringify({
+    /**
+     * @param {WebSocket} socket 
+     * @param {string} roomId 
+     */
+    _left(socket, roomId) {
+        var room = this.rooms[roomId];
+        if(room == undefined)
+            return error(socket, "room not exist on left")
+        
+        if(room[0] == socket){
+            room.shift(); // delete item from first of list
+        } else if(room[1] == socket){
+            room.pop(); // delete item from end of list
+        }
+
+        if(room.length == 0) return;
+
+        room[0].send(JSON.stringify({
             action: "online_status",
             room_id: roomId,
             is_online: false
-        });
-        
-        if(room[0] == socket){
-            room[1].send(response);
-            room.pop(0);
-        } else if(room[1] == socket){
-            room[0].send(response);
-            room.pop(1);
+        }));
+    }
+
+    /**
+     * @param {WebSocket} senderSocket 
+     * @param {string} roomId 
+     * @param {string} data 
+     */
+    publish(senderSocket, roomId, data){
+
+        for(var socket of this.rooms[roomId]){
+            if (socket !== senderSocket){
+                socket.send(JSON.stringify(data));
+                return
+            }
         }
     }
 
-    removeSocket(socket){
-        this.sockets[socket] = undefined;
-    }
-
-    publish(senderSocket, roomId, data){
-        this.rooms[roomId].forEach((socket) => {
-            if (socket !== senderSocket)
-                socket.send(data);
-        })
-    }
-
+    /**
+     * @param {WebSocket} socket 
+     * @param {Array<string>} roomsIds 
+     */
     joinRooms(socket, roomsIds){
         roomsIds.forEach(roomId => {
-            this.joinRoom(socket, roomId);
+            this._joinRoom(socket, roomId);
         });
+        this.sockets[socket] == roomsIds;
     }
 
+    /**
+     * @param {WebSocket} socket 
+     */
     leftAll(socket){
         this.sockets[socket].forEach(roomId => {
             this._left(socket, roomId);
         });
+        this.sockets[socket] = undefined;
     }
 
 }

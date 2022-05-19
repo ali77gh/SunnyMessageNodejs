@@ -35,4 +35,12 @@ when online status change or first connect client will receive this:
 }
 ~~~
 
-# Request to connect
+# publish message
+clients can use this api to send data to each other
+~~~json
+{
+    "action":"publish",
+    "room_id":"UUID",
+    "data": { }
+}
+~~~
