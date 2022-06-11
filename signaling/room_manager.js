@@ -29,7 +29,7 @@ class RoomManager{
      */
     _joinRoom(socket, roomId) {
         let room = this.rooms[roomId];
-        if (room === undefined) {
+        if (typeof(room) !== 'array') {
             // create
             this.rooms[roomId] = [socket];
 
@@ -102,17 +102,28 @@ class RoomManager{
         roomsIds.forEach(roomId => {
             this._joinRoom(socket, roomId);
         });
-        this.sockets[socket] == roomsIds;
+        this.sockets[socket["socketId"]] = roomsIds;
+        
+        console.log("----sockets----")
+        console.log(this.sockets)
+        console.log("----rooms----")
+        console.log(this.rooms)
+        console.log("---------------")
     }
 
     /**
      * @param {WebSocket} socket 
      */
     leftAll(socket){
-        this.sockets[socket].forEach(roomId => {
+        this.sockets[socket["socketId"]].forEach(roomId => {
             this._left(socket, roomId);
         });
-        this.sockets[socket] = undefined;
+        delete this.sockets[socket["socketId"]];
+        console.log("----sockets----")
+        console.log(this.sockets)
+        console.log("----rooms----")
+        console.log(this.rooms)
+        console.log("---------------")
     }
 
 }

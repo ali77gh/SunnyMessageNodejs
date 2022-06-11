@@ -13,15 +13,29 @@ const server = new WebSocket.Server({
   backlog: 10000 // number of pending sockets
 });
 
+console.log("signaling server is up on port " + config.signalingPort);
+
 server.on('connection', function (socket) {
 
+    socket["socketId"] = (Math.random() + 1).toString(36).substring(2)
+
+    console.log(`connection: ${socket.address}`);
     socket.on('message', function (msg) {
-        onMessage(socket, msg);
+        console.log(`msg: ${msg}`);
+        try{
+            onMessage(socket, msg);
+        }catch(e){
+            console.log(`err: ${e}`);
+        }
     });
 
     socket.on('close', function () {
-        room_manager.leftAll(socket);
-        room_manager.removeSocket(socket);
+        console.log(`disconnect: ${socket.address}`);
+        try{
+            room_manager.leftAll(socket);
+        } catch(e) {
+            console.log(`err: ${e}`);
+        }
     });
 });
 
@@ -32,7 +46,7 @@ server.on('connection', function (socket) {
 function onMessage(socket, msg) {
     var body = JSON.parse(msg.toString())
 
-    if(!validate(body)) return;
+    if(!validate(socket,body)) return;
 
     switch(body["action"]){
         case "join":
