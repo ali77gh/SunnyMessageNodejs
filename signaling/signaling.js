@@ -19,9 +19,7 @@ server.on('connection', function (socket) {
 
     socket["socketId"] = (Math.random() + 1).toString(36).substring(2)
 
-    console.log(`connection: ${socket.address}`);
     socket.on('message', function (msg) {
-        console.log(`msg: ${msg}`);
         try{
             onMessage(socket, msg);
         }catch(e){

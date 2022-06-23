@@ -29,20 +29,24 @@ class RoomManager{
      */
     _joinRoom(socket, roomId) {
         let room = this.rooms[roomId];
-        if (typeof(room) !== 'array') {
+        if (typeof(room) === 'undefined') {
             // create
-            this.rooms[roomId] = [socket];
+            this.rooms[roomId] = [];
+            this.rooms[roomId].push(socket);
+            console.log(`create room ${roomId}`);
 
         } else if (room.length === 0) {
             // first user join
-            room.append(socket);
+            room.push(socket);
+            console.log("first join");
 
         } else if (room.length === 1) {
             // second user join
-            room.append(socket);
+            room.push(socket);
+            console.log(`second join ${roomId}`);
 
             var response = JSON.stringify({
-                action: "online_status",
+                action: `online_status`,
                 room_id: roomId,
                 is_online: true
             });
@@ -99,16 +103,11 @@ class RoomManager{
      * @param {Array<string>} roomsIds 
      */
     joinRooms(socket, roomsIds){
+        console.log("start join");
         roomsIds.forEach(roomId => {
             this._joinRoom(socket, roomId);
         });
         this.sockets[socket["socketId"]] = roomsIds;
-        
-        console.log("----sockets----")
-        console.log(this.sockets)
-        console.log("----rooms----")
-        console.log(this.rooms)
-        console.log("---------------")
     }
 
     /**
@@ -119,11 +118,6 @@ class RoomManager{
             this._left(socket, roomId);
         });
         delete this.sockets[socket["socketId"]];
-        console.log("----sockets----")
-        console.log(this.sockets)
-        console.log("----rooms----")
-        console.log(this.rooms)
-        console.log("---------------")
     }
 
 }
