@@ -1,13 +1,9 @@
 
 # Signaling protocol information:
-1. Protocol is standard websocket.(https://www.rfc-editor.org/rfc/rfc6455#section-5.5.2)[Web socket RFC]
+1. Protocol is standard websocket.[Websocket RFC](https://www.rfc-editor.org/rfc/rfc6455#section-5.5.2)
 2. URL is: ws://<SERVER_ADDRESS>:<SERVER_PORT> 
     or: wss://<SERVER_ADDRESS>:<SERVER_PORT> for websocket over tls
 3. web socket body is json.
-
-# Stun protocol information:
-1. Protocol is standard Http.
-2. body is json.
 
 # Join to list of rooms:
 client send this to join: 
